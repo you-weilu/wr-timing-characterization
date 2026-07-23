@@ -5,7 +5,7 @@ tagger = TimeTagger.createTimeTagger()
 
 print("Connected Device Serial:", tagger.getSerial())
 
-# Enable onboard test signal generator (~0.8 MHz) on channels 1 and 2
+# Routes onboard test signal generator to channels 1 and 2
 tagger.setTestSignal([1, 2], True)
 
 # Measure average count rate on channels 1 and 2
