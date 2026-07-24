@@ -60,7 +60,7 @@ TDEV = obj.getTDEV()
 MDEV = obj.getMDEV()
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-np.savez(f"data/adev_results_{timestamp}.npz", tau=tau, ADEV=ADEV, TDEV=TDEV, MDEV=MDEV)
+np.savez(f"../data/adev_results_{timestamp}.npz", tau=tau, ADEV=ADEV, TDEV=TDEV, MDEV=MDEV)
 print(f"Saved data/adev_results_{timestamp}.npz")
 
 TimeTagger.freeTimeTagger(tagger)
