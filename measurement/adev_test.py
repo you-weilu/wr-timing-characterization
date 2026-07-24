@@ -12,7 +12,7 @@ CLOCK_FREQUENCY = 10e6         # Hz — WR-LEN reference clock frequency (10 MHz
 TIME_CONSTANT = 1e-3           # seconds — PLL response tuning (1 ms)
 
 MIN_TAU = 100e-9               # seconds — shortest averaging time (100 ns = 1 period @ 10MHz)
-MAX_TAU = 5                    # seconds — longest averaging time (1 hour)
+MAX_TAU = 0.1                  # seconds — longest averaging time (1 hour)
 NUM_POINTS = 100               # number of logarithmically spaced tau points
 
 AVERAGE = 1000                 # number of raw time-tags averaged before ADEV math

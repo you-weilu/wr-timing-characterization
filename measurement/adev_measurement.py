@@ -17,7 +17,7 @@ NUM_POINTS = 100               # number of logarithmically spaced tau points
 
 AVERAGE = 1000                 # number of raw time-tags averaged before ADEV math
 
-RUN_DURATION_SEC = 4 * 3600    # how long to actually collect data
+RUN_DURATION_SEC = 3600        # how long to actually collect data
 
 ch_master = 3   # WR-LEN 10MHz output
 ch_slave = 4    # second WR-LEN's clock output being compared
