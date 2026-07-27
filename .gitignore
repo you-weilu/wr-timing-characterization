@@ -1,5 +1,2 @@
-plots/*
-!plots/.gitkeep
-
 __pycache__/
 *.pyc
