@@ -19,6 +19,10 @@ for f in files:
     index = d["index"]   # ps bin centers
     data = d["data"]      # counts per bin
 
+    if data.sum() == 0:
+        print(f"Skipping {f} — zero counts")
+        continue
+
     # RMS of the histogram: sqrt(weighted average of index^2, weighted by counts)
     rms = np.sqrt(np.average(index**2, weights=data))
 
