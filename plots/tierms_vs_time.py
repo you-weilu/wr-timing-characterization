@@ -44,6 +44,7 @@ plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
 plt.title("TIE RMS vs. averaging time")
 plt.grid(True, which="both", ls="--", alpha=0.5)
+plt.tight_layout()
 plt.savefig("tie_rms_vs_time.png")
 plt.show()
 
