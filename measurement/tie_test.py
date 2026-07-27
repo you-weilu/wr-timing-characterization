@@ -41,12 +41,16 @@ for checkpoint in CHECKPOINTS_SEC:
     if wait_time > 0: # in case saving/processing took longer than interval between checkpoints
         time.sleep(wait_time)
 
+    corr.stop()
+
     index = corr.getIndex()   # ps bin values (x-axis)
     data = corr.getData()     # coincidence counts in bins (y-axis)
 
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     np.savez(f"../data/tie_histogram_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
+
+    corr.start()
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)
