@@ -1,8 +1,8 @@
 # tierms_vs_time.py
 #
 # Reads saved TIE histogram snapshots (from tie_histogram_snapshots.py),
-# computes an RMS estimate from each histogram, and plots TIE RMS vs.
-# elapsed checkpoint time.
+# computes an RMS estimate (around the histogram's own mean to account for fixed delay)
+# from each histogram, and plots TIE RMS vs. elapsed checkpoint time.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,8 +23,9 @@ for f in files:
         print(f"Skipping {f} — zero counts")
         continue
 
-    # RMS of the histogram: sqrt(weighted average of index^2, weighted by counts)
-    rms = np.sqrt(np.average(index**2, weights=data))
+    # RMS around histogram's mean
+    mean = np.average(index, weights=data)
+    rms = np.sqrt(np.average((index - mean)**2, weights=data))
 
     # Extract the checkpoint time from the filename itself
     # (filenames look like: tie_histogram_0.1s_20260724_....npz)
