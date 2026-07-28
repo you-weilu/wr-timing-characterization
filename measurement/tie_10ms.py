@@ -1,4 +1,4 @@
-# tie_repeated_trials.py
+# tie_10ms.py
 #
 # Repeated independent short-duration Correlation measurements (option B):
 # same Time Tagger connection stays open, but each trial creates a fresh
@@ -22,7 +22,7 @@ BINWIDTH = 1
 N_BINS = 2000
 
 TRIAL_DURATION_SEC = 10e-3   # 10ms per trial
-NUM_TRIALS = 100
+NUM_TRIALS = 1000
 
 # ========================================
 
@@ -30,11 +30,15 @@ tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
 
 all_data = []   # one histogram (array) per trial
+index = None
 
 for trial in range(NUM_TRIALS):
     corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
     corr.startFor(int(TRIAL_DURATION_SEC * 1e12))  # startFor takes picoseconds
     corr.waitUntilFinished()
+
+    if index is None:
+        index = corr.getIndex()   # returns an array of ps time-difference value that each bin represents
 
     data = corr.getData()
     total_counts = data.sum()
@@ -44,7 +48,6 @@ for trial in range(NUM_TRIALS):
 
     del corr  # discard; next loop iteration creates a fresh object
 
-index = corr.getIndex()  # bin centers — same for every trial, grab once at the end
 TimeTagger.freeTimeTagger(tagger)
 
 # Save all trials together: one 2D array (trials x bins), plus shared bin index
