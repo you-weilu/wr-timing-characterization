@@ -16,10 +16,10 @@ BINWIDTH = 1         # ps resolution
 N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
-# Logarithmically spaced (100ns excluded for now)
+# Logarithmically spaced
 # 1ms to 1hr
-MIN_CHECKPOINT_SEC = 1e-3
-MAX_CHECKPOINT_SEC = 3600
+MIN_CHECKPOINT_SEC = 1e-7
+MAX_CHECKPOINT_SEC = 10
 NUM_CHECKPOINTS = 25
 
 CHECKPOINTS_SEC = np.unique(np.logspace(
@@ -34,14 +34,16 @@ print("Connected Device Serial:", tagger.getSerial())
 corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
 corr.start()
 
-start_time = time.time()
+elapsed = 0
 for checkpoint in CHECKPOINTS_SEC:
-    elapsed = time.time() - start_time
-    wait_time = checkpoint - elapsed
-    if wait_time > 0: # in case saving/processing took longer than interval between checkpoints
-        time.sleep(wait_time)
+    segment_duration = checkpoint - elapsed
+    if segment_duration <= 0:
+        continue
 
-    corr.stop() # pause accumulation
+    corr.startFor(int(segment_duration * 1e12), clear=False)  # ps, keep accumulating)
+    corr.waitUntilFinished()
+
+    elapsed = checkpoint
 
     index = corr.getIndex()   # ps bin values (x-axis)
     data = corr.getData()     # coincidence counts in bins (y-axis)
@@ -49,8 +51,6 @@ for checkpoint in CHECKPOINTS_SEC:
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     np.savez(f"../data/tie_histogram_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
-
-    corr.start()
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)
