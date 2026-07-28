@@ -1,4 +1,4 @@
-# tie_10ms.py
+# tie_100ns.py
 #
 # Repeated independent short-duration Correlation measurements:
 # same Time Tagger connection stays open, but each trial creates a fresh
@@ -17,8 +17,8 @@ ch_slave = 4
 BINWIDTH = 1
 N_BINS = 2000
 
-TRIAL_DURATION_SEC = 10e-3   # 10ms per trial
-NUM_TRIALS = 100
+TRIAL_DURATION_SEC = 1e-7   # 100ns per trial
+NUM_TRIALS = 1000
 
 # ========================================
 
@@ -51,4 +51,4 @@ all_data = np.array(all_data)
 combined_data = all_data.sum(axis=0) # collapse into one histogram
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 np.savez(f"../data/tie_histogram_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz", index=index, data=combined_data)
-print(f"Saved combined histogram from {NUM_TRIALS} trials to ../data/tie_histogram_10ms_{timestamp}.npz")
+print(f"Saved combined histogram from {NUM_TRIALS} trials to ../data/tie_histogram_100ns_{timestamp}.npz")
