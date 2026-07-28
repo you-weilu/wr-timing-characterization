@@ -17,7 +17,7 @@ BINWIDTH = 1
 N_BINS = 2000
 
 # Array of durations to redo
-DURATIONS_TO_REDO = [0.0001199, 0.0002154, 0.0003302, 0.0004642]
+DURATIONS_TO_REDO = [0.0009091, 0.002154, 0.002503]
 NUM_TRIALS = 50
 
 # ========================================
