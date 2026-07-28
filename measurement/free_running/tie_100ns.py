@@ -18,7 +18,7 @@ BINWIDTH = 1
 N_BINS = 2000
 
 TRIAL_DURATION_SEC = 1e-7   # 100ns per trial
-NUM_TRIALS = 1000
+NUM_TRIALS = 3000
 
 # ========================================
 
