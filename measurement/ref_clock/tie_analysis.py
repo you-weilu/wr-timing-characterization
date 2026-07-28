@@ -17,8 +17,8 @@ N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
-# 100ns to 1hr
-MIN_CHECKPOINT_SEC = 1e-7
+# 10ms to 1hr
+MIN_CHECKPOINT_SEC = 1e-2
 MAX_CHECKPOINT_SEC = 3600
 NUM_CHECKPOINTS = 25
 
@@ -30,6 +30,16 @@ CHECKPOINTS_SEC = np.unique(np.logspace(
 
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
+
+# Set reference Clock (to master)
+tagger.setReferenceClock(
+    clock_channel=ch_master,
+    clock_frequency=10e6,
+    time_constant=1e-3,
+    synchronization_offset=0,
+    wait_until_locked=True
+)
+print("Reference Clock locked.")
 
 corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
 corr.start()
