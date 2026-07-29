@@ -1,21 +1,20 @@
-# tierms_vs_time.py
+# ref_tierms_vs_time.py
 #
-# Reads saved TIE histogram snapshots,
+# Reads saved TIE histogram snapshots from the reference clock run,
 # computes an RMS estimate (around the histogram's own mean to account for fixed delay)
-# from each histogram, and plots TIE RMS vs. elapsed checkpoint time.
+# from each histogram, and plots TIE RMS (ref clock) vs. elapsed checkpoint time.
 
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
 import re
 
-files = sorted(glob.glob("../data/tie_histogram_*.npz"))
-free_running_files = [f for f in files if "refclk" not in f]
+files = sorted(glob.glob("../data/tie_histogram_refclk_*.npz"))
 
 checkpoint_times = []
 tie_rms_values = []
 
-for f in free_running_files:
+for f in files:
     d = np.load(f)
     index = d["index"]   # ps bin centers
     data = d["data"]      # counts per bin
@@ -30,7 +29,7 @@ for f in free_running_files:
 
     # Extract the checkpoint time from the filename itself
     # (filenames look like: tie_histogram_0.1s_20260724_....npz)
-    match = re.search(r"tie_histogram_([\d.eE+-]+)s_", f)
+    match = re.search(r"tie_histogram_refclk_([\d.eE+-]+)s_", f)
     checkpoint_time = float(match.group(1))
 
     checkpoint_times.append(checkpoint_time)
@@ -44,10 +43,10 @@ tie_rms_values = np.array(tie_rms_values)[order]
 plt.loglog(checkpoint_times, tie_rms_values, marker='o')
 plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
-plt.title("TIE RMS vs. averaging time")
+plt.title("TIE RMS (ref clock) vs. averaging time")
 plt.grid(True, which="both", ls="--", alpha=0.5)
 plt.tight_layout()
-plt.savefig("tie_rms_vs_time.png")
+plt.savefig("ref_tie_rms_vs_time.png")
 plt.show()
 
 print("Checkpoint times (s):", checkpoint_times)
