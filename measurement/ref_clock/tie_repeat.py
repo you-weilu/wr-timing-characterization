@@ -24,6 +24,16 @@ NUM_TRIALS = 50
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
 
+# Set reference Clock (to master)
+tagger.setReferenceClock(
+    clock_channel=ch_master,
+    clock_frequency=10e6,
+    time_constant=1e-3,
+    synchronization_offset=0,
+    wait_until_locked=True
+)
+print("Reference Clock locked.")
+
 for TRIAL_DURATION_SEC in DURATIONS_TO_REDO:
     print(f"\n=== Starting {NUM_TRIALS} trials at {TRIAL_DURATION_SEC}s each ===")
 
@@ -49,7 +59,7 @@ for TRIAL_DURATION_SEC in DURATIONS_TO_REDO:
     combined_data = all_data.sum(axis=0)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"../../data/tie_histogram_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
+    fname = f"../../data/tie_histogram_refclk_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
     np.savez(fname, index=index, data=combined_data)
     print(f"Saved combined histogram to {fname}")
 
