@@ -2,7 +2,7 @@ import numpy as np
 import glob
 import re
 
-files = sorted(glob.glob("../../data/tie_histogram_*.npz"))
+files = sorted(f for f in glob.glob("../../data/tie_histogram_*.npz") if "refclk" not in f)
 
 checkpoint_times = []
 counts_list = []
