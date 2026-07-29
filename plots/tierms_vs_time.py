@@ -17,7 +17,7 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000, max_sim_size = 2
 
     rms_estimates = []
     for _ in range(n_simulations):
-        simulated = np.random.normal(loc=mean, scale=sigma, size=sim)
+        simulated = np.random.normal(loc=mean, scale=sigma, size=sim_size)
         sim_mean = np.mean(simulated)
         sim_rms = np.sqrt(np.mean((simulated - sim_mean)**2))
         rms_estimates.append(sim_rms)
