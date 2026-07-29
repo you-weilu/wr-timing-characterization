@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 import glob
 import re
 
-def gaussian_monte_carlo_error(index, data, n_simulations=1000, max_sim_size = 10000):
+def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
     total_counts = int(data.sum())
-    sim_size = min(total_counts, max_sim_size) # cap sim size
+    # sim_size = min(total_counts, max_sim_size) # cap sim size
 
     rms_estimates = []
     for _ in range(n_simulations):
-        simulated = np.random.normal(loc=mean, scale=sigma, size=sim_size)
+        simulated = np.random.normal(loc=mean, scale=sigma, size=total_counts)
         sim_mean = np.mean(simulated)
         sim_rms = np.sqrt(np.mean((simulated - sim_mean)**2))
         rms_estimates.append(sim_rms)
