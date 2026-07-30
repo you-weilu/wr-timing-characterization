@@ -17,16 +17,16 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
 
-    # Expand histogram bins to individual sample values
-    actual_points = np.repeat(index, data.astype(int))
-    n = len(actual_points)
+    rms_estimates = np.empty(n_simulations)
 
-    rms_estimates = np.empty(n_simulations) # empty array to store rms
     for i in range(n_simulations):
-        # Add per-point jitter drawn from instrument noise distribution
-        perturbed = actual_points + np.random.normal(0, SIGMA_JITTER_PS, size=n)
-        sim_mean = np.mean(perturbed)
-        rms_estimates[i] = np.sqrt(np.mean((perturbed - sim_mean)**2))
+        # For each bin, simulate a new count via ??Poisson noise?? around the real count
+        simulated_counts = np.random.poisson(lam=data)
+        
+        # Recompute mean/RMS using these simulated counts as the new weights
+        sim_mean = np.average(index, weights=simulated_counts)
+        sim_rms = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
+        rms_estimates[i] = sim_rms
 
     return sigma, np.std(rms_estimates)
 
