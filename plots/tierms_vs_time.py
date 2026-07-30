@@ -2,36 +2,38 @@
 #
 # Reads saved TIE histogram snapshots,
 # computes an RMS estimate (around the histogram's own mean to account for fixed delay)
-# from each histogram, and plots TIE RMS vs. elapsed checkpoint time.
+# from each histogram with Monte Carlo uncertainty via Poisson resampling of bin counts,
+# and plots TIE RMS vs. elapsed checkpoint time.
 
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
 import re
 
-def gaussian_monte_carlo_error(index, data, n_simulations=1000, max_sim_size = 20000):
+def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
-    total_counts = int(data.sum())
-    sim_size = min(total_counts, max_sim_size) # cap sim size
 
-    rms_estimates = []
-    for _ in range(n_simulations):
-        simulated = np.random.normal(loc=mean, scale=sigma, size=sim_size)
-        sim_mean = np.mean(simulated)
-        sim_rms = np.sqrt(np.mean((simulated - sim_mean)**2))
-        rms_estimates.append(sim_rms)
+    rms_estimates = np.empty(n_simulations)
 
-    rms_estimates = np.array(rms_estimates)
-    return sigma, np.std(rms_estimates)   # (actual RMS from real data, error bar)
+    for i in range(n_simulations):
+        simulated_counts = np.random.poisson(lam=data)
+        sim_mean = np.average(index, weights=simulated_counts)
+        sim_rms = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
+        rms_estimates[i] = sim_rms
+
+    return sigma, np.std(rms_estimates)
 
 files = sorted(glob.glob("../data/tie_histogram_*.npz"))
 free_running_files = [f for f in files if "refclk" not in f]
 
-checkpoint_times = []
-tie_rms_values = []
-error_bars = []
+# preallocate arrays with number of data points
+n = len(free_running_files)
+checkpoint_times = np.empty(n)
+tie_rms_values = np.empty(n)
+error_bars = np.empty(n)
 
+i = 0
 for f in free_running_files:
     d = np.load(f)
     index = d["index"]   # ps bin centers
@@ -40,18 +42,20 @@ for f in free_running_files:
     if data.sum() == 0:
         print(f"Skipping {f} — zero counts")
         continue
-    
-    # rms around histogram's mean + monte carlo error
+
     rms, error = gaussian_monte_carlo_error(index, data)
 
-    # Extract the checkpoint time from the filename itself
-    # (filenames look like: tie_histogram_0.1s_20260724_....npz)
     match = re.search(r"tie_histogram_([\d.eE+-]+)s_", f)
     checkpoint_time = float(match.group(1))
 
-    checkpoint_times.append(checkpoint_time)
-    tie_rms_values.append(rms)
-    error_bars.append(error)
+    checkpoint_times[i] = checkpoint_time
+    tie_rms_values[i] = rms
+    error_bars[i] = error
+    i += 1
+
+checkpoint_times = checkpoint_times[:i]
+tie_rms_values = tie_rms_values[:i]
+error_bars = error_bars[:i]
 
 # Sort by checkpoint time, in case glob's alphabetical order doesn't match numeric order
 order = np.argsort(checkpoint_times)
@@ -61,7 +65,6 @@ error_bars = np.array(error_bars)[order]
 
 plt.errorbar(checkpoint_times, tie_rms_values, yerr=error_bars, marker='o', capsize=3)
 plt.xscale("log")
-plt.yscale("log")
 plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
 plt.title("TIE RMS vs. averaging time")

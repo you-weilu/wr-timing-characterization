@@ -1,6 +1,7 @@
 # overlay_tierms_vs_time.py
 #
-# Overlays TIE RMS vs. averaging time for free-running and reference-clock runs.
+# Overlays TIE RMS vs. averaging time for free-running and reference-clock runs,
+# with Monte Carlo uncertainty via Poisson resampling of bin counts.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,27 +9,28 @@ import glob
 import re
 
 
-def gaussian_monte_carlo_error(index, data, n_simulations=1000, max_sim_size=20000):
+def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
-    total_counts = int(data.sum())
-    sim_size = min(total_counts, max_sim_size)
 
-    rms_estimates = []
-    for _ in range(n_simulations):
-        simulated = np.random.normal(loc=mean, scale=sigma, size=sim_size)
-        sim_mean = np.mean(simulated)
-        sim_rms = np.sqrt(np.mean((simulated - sim_mean)**2))
-        rms_estimates.append(sim_rms)
+    rms_estimates = np.empty(n_simulations)
 
-    return sigma, np.std(np.array(rms_estimates))
+    for i in range(n_simulations):
+        simulated_counts = np.random.poisson(lam=data)
+        sim_mean = np.average(index, weights=simulated_counts)
+        sim_rms = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
+        rms_estimates[i] = sim_rms
+
+    return sigma, np.std(rms_estimates)
 
 
 def load_tierms(files, time_regex):
-    checkpoint_times = []
-    tie_rms_values = []
-    error_bars = []
+    n = len(files)
+    checkpoint_times = np.empty(n)
+    tie_rms_values = np.empty(n)
+    error_bars = np.empty(n)
 
+    i = 0
     for f in files:
         d = np.load(f)
         index = d["index"]
@@ -41,12 +43,17 @@ def load_tierms(files, time_regex):
         rms, error = gaussian_monte_carlo_error(index, data)
 
         match = re.search(time_regex, f)
-        checkpoint_times.append(float(match.group(1)))
-        tie_rms_values.append(rms)
-        error_bars.append(error)
+        checkpoint_times[i] = float(match.group(1))
+        tie_rms_values[i] = rms
+        error_bars[i] = error
+        i += 1
+
+    checkpoint_times = checkpoint_times[:i]
+    tie_rms_values = tie_rms_values[:i]
+    error_bars = error_bars[:i]
 
     order = np.argsort(checkpoint_times)
-    return np.array(checkpoint_times)[order], np.array(tie_rms_values)[order], np.array(error_bars)[order]
+    return checkpoint_times[order], tie_rms_values[order], error_bars[order]
 
 
 all_files = sorted(glob.glob("../data/tie_histogram_*.npz"))
@@ -62,7 +69,6 @@ if len(free_times):
 if len(ref_times):
     plt.errorbar(ref_times, ref_rms, yerr=ref_err, marker='s', capsize=3, label="Ref clock")
 plt.xscale("log")
-plt.yscale("log")
 
 plt.xlabel("Averaging time (s)")
 plt.ylabel("TIE RMS (ps)")

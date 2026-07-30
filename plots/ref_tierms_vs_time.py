@@ -68,7 +68,6 @@ error_bars = np.array(error_bars)[order]
 
 plt.errorbar(checkpoint_times, tie_rms_values, yerr=error_bars, marker='o', capsize=3)
 plt.xscale("log")
-plt.yscale("log")
 plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
 plt.title("TIE RMS (ref clock) vs. averaging time")
