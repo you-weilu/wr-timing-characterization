@@ -2,7 +2,8 @@
 #
 # Reads saved TIE histogram snapshots from the reference clock run,
 # computes an RMS estimate (around the histogram's own mean to account for fixed delay)
-# from each histogram, and plots TIE RMS (ref clock) vs. elapsed checkpoint time.
+# from each histogram with Monte Carlo uncertainty via Poisson resampling of bin counts,
+# and plots TIE RMS (ref clock) vs. elapsed checkpoint time.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,8 +12,6 @@ import re
 
 # rmb to compare with fitted gaussian instead of actual histogram
 
-SIGMA_JITTER_PS = 10.0  # per-sample measurement noise (ps)
-
 def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
@@ -20,8 +19,8 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     rms_estimates = np.empty(n_simulations)
 
     for i in range(n_simulations):
-        # For each bin, simulate a new count via ??Poisson noise?? around the real count
-        simulated_counts = np.random.poisson(lam=data)
+        # For each bin, simulate a new count via ???Poisson noise??? around the real count
+        simulated_counts = np.random.poisson(lam=data) # simulated_counts: each element in data array simulated with poissonian error
         
         # Recompute mean/RMS using these simulated counts as the new weights
         sim_mean = np.average(index, weights=simulated_counts)
@@ -32,10 +31,13 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000):
 
 files = sorted(glob.glob("../data/tie_histogram_refclk_*.npz"))
 
-checkpoint_times = []
-tie_rms_values = []
-error_bars = []
+# preallocate arrays with number of data points
+n = len(files)
+checkpoint_times = np.empty(n)
+tie_rms_values = np.empty(n)
+error_bars = np.empty(n)
 
+i = 0
 for f in files:
     d = np.load(f)
     index = d["index"]   # ps bin centers
@@ -48,11 +50,16 @@ for f in files:
     rms, error = gaussian_monte_carlo_error(index, data)
 
     match = re.search(r"tie_histogram_refclk_([\d.eE+-]+)s_", f)
-    checkpoint_time = float(match.group(1))
+    checkpoint_time = float(match.group(1)) # extract first set of parantheses from regex pattern search (checkpoint time)
 
-    checkpoint_times.append(checkpoint_time)
-    tie_rms_values.append(rms)
-    error_bars.append(error)
+    checkpoint_times[i] = checkpoint_time
+    tie_rms_values[i] = rms
+    error_bars[i] = error
+    i += 1
+
+checkpoint_times = checkpoint_times[:i]
+tie_rms_values = tie_rms_values[:i]
+error_bars = error_bars[:i]
 
 order = np.argsort(checkpoint_times)
 checkpoint_times = np.array(checkpoint_times)[order]
