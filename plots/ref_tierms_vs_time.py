@@ -9,20 +9,25 @@ import matplotlib.pyplot as plt
 import glob
 import re
 
-def gaussian_monte_carlo_error(index, data, n_simulations=1000, max_sim_size=20000):
+# rmb to compare with fitted gaussian instead of actual histogram
+
+SIGMA_JITTER_PS = 10.0  # per-sample measurement noise (ps)
+
+def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
     sigma = np.sqrt(np.average((index - mean)**2, weights=data))
-    total_counts = int(data.sum())
-    sim_size = min(total_counts, max_sim_size)
 
-    rms_estimates = []
-    for _ in range(n_simulations):
-        simulated = np.random.normal(loc=mean, scale=sigma, size=sim_size)
-        sim_mean = np.mean(simulated)
-        sim_rms = np.sqrt(np.mean((simulated - sim_mean)**2))
-        rms_estimates.append(sim_rms)
+    # Expand histogram bins to individual sample values
+    actual_points = np.repeat(index, data.astype(int))
+    n = len(actual_points)
 
-    rms_estimates = np.array(rms_estimates)
+    rms_estimates = np.empty(n_simulations) # empty array to store rms
+    for i in range(n_simulations):
+        # Add per-point jitter drawn from instrument noise distribution
+        perturbed = actual_points + np.random.normal(0, SIGMA_JITTER_PS, size=n)
+        sim_mean = np.mean(perturbed)
+        rms_estimates[i] = np.sqrt(np.mean((perturbed - sim_mean)**2))
+
     return sigma, np.std(rms_estimates)
 
 files = sorted(glob.glob("../data/tie_histogram_refclk_*.npz"))
