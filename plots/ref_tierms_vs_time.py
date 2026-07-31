@@ -29,7 +29,7 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000):
 
     return sigma, np.std(rms_estimates)
 
-files = sorted(glob.glob("../data/tie_histogram_refclk_*.npz"))
+files = sorted(glob.glob("../data/tie_histogram_1.2km_*.npz"))
 
 # preallocate arrays with number of data points
 n = len(files)
@@ -49,7 +49,7 @@ for f in files:
 
     rms, error = gaussian_monte_carlo_error(index, data)
 
-    match = re.search(r"tie_histogram_refclk_([\d.eE+-]+)s_", f)
+    match = re.search(r"tie_histogram_1.2km_([\d.eE+-]+)s_", f)
     checkpoint_time = float(match.group(1)) # extract first set of parantheses from regex pattern search (checkpoint time)
 
     checkpoint_times[i] = checkpoint_time
@@ -70,7 +70,7 @@ plt.errorbar(checkpoint_times, tie_rms_values, yerr=error_bars, marker='o', caps
 plt.xscale("log")
 plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
-plt.title("TIE RMS (ref clock) vs. averaging time")
+plt.title("TIE RMS (1.2km fibre spool) vs. averaging time")
 plt.grid(True, which="both", ls="--", alpha=0.5)
 plt.tight_layout()
 plt.savefig("ref_tie_rms_vs_time.png")
