@@ -17,8 +17,8 @@ N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
-# 100ns to 1hr
-MIN_CHECKPOINT_SEC = 1e-7
+# 10ms to 1hr
+MIN_CHECKPOINT_SEC = 1e-2
 MAX_CHECKPOINT_SEC = 3600
 NUM_CHECKPOINTS = 25
 
@@ -50,7 +50,7 @@ for checkpoint in CHECKPOINTS_SEC:
 
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    np.savez(f"../../data/tie_histogram_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
+    np.savez(f"../../data/tie_histogram_1.2km_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)
