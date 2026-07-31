@@ -19,8 +19,8 @@ N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 # Logarithmically spaced (100ns excluded for now)
 # 1ms to 1hr
 MIN_CHECKPOINT_SEC = 1e-3
-MAX_CHECKPOINT_SEC = 10
-NUM_CHECKPOINTS = 5
+MAX_CHECKPOINT_SEC = 60
+NUM_CHECKPOINTS = 10
 
 CHECKPOINTS_SEC = np.unique(np.logspace(
     np.log10(MIN_CHECKPOINT_SEC),
