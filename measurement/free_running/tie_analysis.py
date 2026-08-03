@@ -15,6 +15,8 @@ ch_slave = 4    # WR-LEN #2 clock output
 BINWIDTH = 1         # ps resolution
 N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
+TRIGGER_LEVEL_V = 0.1
+
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
 # 10ms to 1hr
@@ -30,6 +32,9 @@ CHECKPOINTS_SEC = np.unique(np.logspace(
 
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
+
+tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
+tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
 corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
 corr.start()

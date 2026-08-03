@@ -20,10 +20,15 @@ N_BINS = 2000
 DURATIONS_TO_REDO = [0.0001199, 0.0002154, 0.0002503, 0.0003302, 0.0004642 ,0.0009091, 0.002154, 0.002503]
 NUM_TRIALS = 50
 
+TRIGGER_LEVEL_V = 0.1
+
 # ========================================
 
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
+
+tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
+tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
 for TRIAL_DURATION_SEC in DURATIONS_TO_REDO:
     print(f"\n=== Starting {NUM_TRIALS} trials at {TRIAL_DURATION_SEC}s each ===")

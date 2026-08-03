@@ -20,10 +20,15 @@ N_BINS = 2000
 TRIAL_DURATION_SEC = 1e-5   # 10us per trial
 NUM_TRIALS = 1000
 
+TRIGGER_LEVEL_V = 0.1
+
 # ========================================
 
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
+
+tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
+tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
 all_data = []   # one histogram (array) per trial
 index = None
