@@ -50,5 +50,5 @@ TimeTagger.freeTimeTagger(tagger)
 all_data = np.array(all_data)
 combined_data = all_data.sum(axis=0) # collapse into one histogram
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-np.savez(f"../../data/tie_histogram_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz", index=index, data=combined_data)
+np.savez(f"../../data/tie_histogram_1.2km_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz", index=index, data=combined_data)
 print(f"Saved combined histogram from {NUM_TRIALS} trials to ../data/tie_histogram_1us_{timestamp}.npz")
