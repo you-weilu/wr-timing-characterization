@@ -57,29 +57,29 @@ def load_tierms(files, time_regex):
 
 
 all_files = sorted(glob.glob("../data/tie_histogram_*.npz"))
-free_files = [f for f in all_files if "refclk" not in f]
-ref_files  = sorted(glob.glob("../data/tie_histogram_refclk_*.npz"))
+free_files = [f for f in all_files if "refclk" not in f and "1.2km" not in f]
+link_files = sorted(glob.glob("../data/tie_histogram_1.2km_*.npz"))
 
 free_times, free_rms, free_err = load_tierms(free_files, r"tie_histogram_([\d.eE+-]+)s_")
-ref_times,  ref_rms,  ref_err  = load_tierms(ref_files,  r"tie_histogram_refclk_([\d.eE+-]+)s_")
+link_times, link_rms, link_err = load_tierms(link_files, r"tie_histogram_1\.2km_([\d.eE+-]+)s_")
 
 plt.figure()
 if len(free_times):
     plt.errorbar(free_times, free_rms, yerr=free_err, marker='o', capsize=3, label="Free running")
-if len(ref_times):
-    plt.errorbar(ref_times, ref_rms, yerr=ref_err, marker='s', capsize=3, label="Ref clock")
+if len(link_times):
+    plt.errorbar(link_times, link_rms, yerr=link_err, marker='s', capsize=3, label="1.2 km link")
 plt.xscale("log")
 
 plt.xlabel("Averaging time (s)")
 plt.ylabel("TIE RMS (ps)")
-plt.title("TIE RMS vs. averaging time: free running vs. ref clock")
+plt.title("TIE RMS vs. averaging time: free running vs. 1.2 km link")
 plt.legend()
 plt.grid(True, which="both", ls="--", alpha=0.5)
 plt.tight_layout()
-plt.savefig("overlay_tie_rms_vs_time.png", dpi=150)
+plt.savefig("overlay(1.2km)_tie_rms_vs_time.png", dpi=150)
 plt.show()
 
 print("Free-running — times (s):", free_times)
 print("Free-running — RMS (ps): ", free_rms)
-print("Ref clock    — times (s):", ref_times)
-print("Ref clock    — RMS (ps): ", ref_rms)
+print("1.2 km link  — times (s):", link_times)
+print("1.2 km link  — RMS (ps): ", link_rms)
