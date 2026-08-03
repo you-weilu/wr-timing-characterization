@@ -5,7 +5,6 @@
 
 from Swabian import TimeTagger
 import numpy as np
-import time
 from datetime import datetime
 
 # Configuration
@@ -22,6 +21,8 @@ MIN_CHECKPOINT_SEC = 1e-3
 MAX_CHECKPOINT_SEC = 5
 NUM_CHECKPOINTS = 10
 
+TRIGGER_LEVEL_V = 0.1
+
 CHECKPOINTS_SEC = np.unique(np.logspace(
     np.log10(MIN_CHECKPOINT_SEC),
     np.log10(MAX_CHECKPOINT_SEC),
@@ -31,17 +32,13 @@ CHECKPOINTS_SEC = np.unique(np.logspace(
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
 
-corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
-corr.start()
+tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
+tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
-start_time = time.time()
 for checkpoint in CHECKPOINTS_SEC:
-    elapsed = time.time() - start_time
-    wait_time = checkpoint - elapsed
-    if wait_time > 0: # in case saving/processing took longer than interval between checkpoints
-        time.sleep(wait_time)
-
-    corr.stop()
+    corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
+    corr.startFor(int(checkpoint * 1e12))  # startFor takes picoseconds
+    corr.waitUntilFinished()
 
     index = corr.getIndex()   # ps bin values (x-axis)
     data = corr.getData()     # coincidence counts in bins (y-axis)
@@ -50,8 +47,7 @@ for checkpoint in CHECKPOINTS_SEC:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     np.savez(f"../../data/tie_histogram_tt_jitter_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
 
-    corr.start()
+    del corr
 
-corr.stop()
 TimeTagger.freeTimeTagger(tagger)
 print("Done.")
