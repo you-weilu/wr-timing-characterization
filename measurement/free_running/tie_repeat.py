@@ -50,7 +50,7 @@ for TRIAL_DURATION_SEC in DURATIONS_TO_REDO:
     combined_data = all_data.sum(axis=0)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"../../data/tie_histogram_1.2km_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
+    fname = f"../../data/tie_histogram_tt_jitter_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
     np.savez(fname, index=index, data=combined_data)
     print(f"Saved combined histogram to {fname}")
 

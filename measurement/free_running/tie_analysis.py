@@ -50,7 +50,7 @@ for checkpoint in CHECKPOINTS_SEC:
 
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    np.savez(f"../../data/tie_histogram_1.2km_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
+    np.savez(f"../../data/tie_histogram_tt_jitter_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)
