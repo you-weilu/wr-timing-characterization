@@ -1,8 +1,10 @@
 # overlay_tierms_vs_time.py
 #
 # Overlays TIE RMS vs. averaging time for free-running and reference-clock runs.
-# Error bars are empirical: sigma = std of TIE RMS values across 1000 independent
-# trials collected at short averaging times, assumed constant across all time points.
+# Error bars are per-point Monte Carlo: model the underlying distribution as
+# Normal(mean, sigma) from the histogram, draw total_counts raw samples per trial,
+# recompute RMS, and use the std of those estimates as the error bar.
+# Error bars naturally shrink at longer averaging times (more counts).
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,10 +31,25 @@ def empirical_sigma(prefix):
     return np.mean(sigmas)
 
 
-def load_tierms(files, time_regex):
+def monte_carlo_error(index, data, sigma, n_simulations=1000):
+    total_counts = int(data.sum())
+    mean = np.average(index, weights=data)
+    rms = np.sqrt(np.average((index - mean)**2, weights=data))
+
+    rms_estimates = np.empty(n_simulations)
+    for i in range(n_simulations):
+        samples = np.random.normal(loc=mean, scale=sigma, size=total_counts)
+        sim_mean = np.mean(samples)
+        rms_estimates[i] = np.sqrt(np.mean((samples - sim_mean)**2))
+
+    return rms, np.std(rms_estimates)
+
+
+def load_tierms(files, time_regex, sigma):
     n = len(files)
     checkpoint_times = np.empty(n)
     tie_rms_values = np.empty(n)
+    error_bars = np.empty(n)
 
     i = 0
     for f in files:
@@ -44,16 +61,20 @@ def load_tierms(files, time_regex):
             print(f"Skipping {f} — zero counts")
             continue
 
+        rms, error = monte_carlo_error(index, data, sigma)
+
         match = re.search(time_regex, f)
         checkpoint_times[i] = float(match.group(1))
-        tie_rms_values[i] = tie_rms(index, data)
+        tie_rms_values[i] = rms
+        error_bars[i] = error
         i += 1
 
     checkpoint_times = checkpoint_times[:i]
     tie_rms_values = tie_rms_values[:i]
+    error_bars = error_bars[:i]
 
     order = np.argsort(checkpoint_times)
-    return checkpoint_times[order], tie_rms_values[order]
+    return checkpoint_times[order], tie_rms_values[order], error_bars[order]
 
 
 all_files = sorted(glob.glob("../data/tie_histogram_*.npz"))
@@ -65,17 +86,17 @@ free_sigma = empirical_sigma("free")
 link_sigma = empirical_sigma("1.2km")
 tt_sigma   = empirical_sigma("tt_jitter")
 
-free_times, free_rms = load_tierms(free_files, r"tie_histogram_([\d.eE+-]+)s_")
-link_times, link_rms = load_tierms(link_files, r"tie_histogram_1\.2km_([\d.eE+-]+)s_")
-tt_times,   tt_rms   = load_tierms(tt_jitter_files, r"tie_histogram_tt_jitter_([\d.eE+-]+)s_")
+free_times, free_rms, free_err = load_tierms(free_files, r"tie_histogram_([\d.eE+-]+)s_", free_sigma)
+link_times, link_rms, link_err = load_tierms(link_files, r"tie_histogram_1\.2km_([\d.eE+-]+)s_", link_sigma)
+tt_times,   tt_rms,   tt_err   = load_tierms(tt_jitter_files, r"tie_histogram_tt_jitter_([\d.eE+-]+)s_", tt_sigma)
 
 plt.figure()
 if len(free_times):
-    plt.errorbar(free_times, free_rms, yerr=free_sigma, marker='o', capsize=3, label="Back-to-back")
+    plt.errorbar(free_times, free_rms, yerr=free_err, marker='o', capsize=3, label="Back-to-back")
 if len(link_times):
-    plt.errorbar(link_times, link_rms, yerr=link_sigma, marker='s', capsize=3, label="1.2 km link")
+    plt.errorbar(link_times, link_rms, yerr=link_err, marker='s', capsize=3, label="1.2 km link")
 if len(tt_times):
-    plt.errorbar(tt_times, tt_rms, yerr=tt_sigma, marker='^', capsize=3, label="TT jitter")
+    plt.errorbar(tt_times, tt_rms, yerr=tt_err, marker='^', capsize=3, label="TT jitter")
 plt.xscale("log")
 
 plt.xlabel("Averaging time (s)")
