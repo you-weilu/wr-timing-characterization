@@ -27,8 +27,8 @@ def empirical_sigma(prefix):
         d = np.load(f)
         rms_per_trial = [tie_rms(d["index"], row) for row in d["trials"] if row.sum() > 0]
         if rms_per_trial:
-            sigmas.append(np.std(rms_per_trial))
-    return np.mean(sigmas)
+            sigmas.append(rms_per_trial)
+    return np.std(sigmas)
 
 
 def monte_carlo_error(index, data, sigma, n_simulations=1000):

@@ -15,7 +15,7 @@ ch_master = 3
 ch_slave = 4
 
 BINWIDTH = 1
-N_BINS = 2000
+N_BINS = 1000
 
 DATA_PREFIX = "1.2km"  # change to "tt_jitter" for TT internal jitter measurements
 
@@ -38,6 +38,7 @@ for duration in DURATIONS_SEC:
 
     for trial in range(NUM_TRIALS):
         corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
+        corr.clear()
         corr.startFor(int(duration * 1e12))
         corr.waitUntilFinished()
 
