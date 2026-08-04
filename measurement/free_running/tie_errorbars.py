@@ -17,7 +17,7 @@ ch_slave = 4
 BINWIDTH = 1
 N_BINS = 2000
 
-DATA_PREFIX = "tt_jitter"  # change to "tt_jitter" for TT internal jitter measurements
+DATA_PREFIX = "free"  # change to "tt_jitter" for TT internal jitter measurements
 
 DURATIONS_SEC = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1]  # 10us to 100ms
 NUM_TRIALS = 1000

@@ -62,7 +62,7 @@ link_files = sorted(glob.glob("../data/tie_histogram_1.2km_*.npz"))
 tt_jitter_files = sorted(glob.glob("../data/tie_histogram_tt_jitter_*.npz"))
 
 free_sigma = empirical_sigma("free")
-link_sigma = empirical_sigma("refclk")
+link_sigma = empirical_sigma("1.2km")
 tt_sigma   = empirical_sigma("tt_jitter")
 
 free_times, free_rms = load_tierms(free_files, r"tie_histogram_([\d.eE+-]+)s_")
