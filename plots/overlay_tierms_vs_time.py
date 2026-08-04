@@ -32,15 +32,15 @@ def empirical_sigma(prefix):
 
 
 def monte_carlo_error(index, data, sigma, n_simulations=1000):
-    total_counts = int(data.sum())
     mean = np.average(index, weights=data)
     rms = np.sqrt(np.average((index - mean)**2, weights=data))
 
     rms_estimates = np.empty(n_simulations)
     for i in range(n_simulations):
-        samples = np.random.normal(loc=mean, scale=sigma, size=total_counts)
-        sim_mean = np.mean(samples)
-        rms_estimates[i] = np.sqrt(np.mean((samples - sim_mean)**2))
+        simulated_counts = np.random.normal(loc=data, scale=sigma)
+        simulated_counts = np.clip(simulated_counts, 0, None)
+        sim_mean = np.average(index, weights=simulated_counts)
+        rms_estimates[i] = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
 
     return rms, np.std(rms_estimates)
 
@@ -61,7 +61,8 @@ def load_tierms(files, time_regex, sigma):
             print(f"Skipping {f} — zero counts")
             continue
 
-        rms, error = monte_carlo_error(index, data, sigma)
+        rms, error = tie_rms(index, data), sigma  # flat empirical-sigma error bar (same for all points)
+        # rms, error = monte_carlo_error(index, data, sigma)
 
         match = re.search(time_regex, f)
         checkpoint_times[i] = float(match.group(1))
