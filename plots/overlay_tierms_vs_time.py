@@ -27,22 +27,22 @@ def empirical_sigma(prefix):
         d = np.load(f)
         rms_per_trial = [tie_rms(d["index"], row) for row in d["trials"] if row.sum() > 0]
         if rms_per_trial:
-            sigmas.append(rms_per_trial)
+            sigmas.extend(rms_per_trial)
     return np.std(sigmas)
 
 
-def monte_carlo_error(index, data, sigma, n_simulations=1000):
-    mean = np.average(index, weights=data)
-    rms = np.sqrt(np.average((index - mean)**2, weights=data))
+# def monte_carlo_error(index, data, sigma, n_simulations=1000):
+#     mean = np.average(index, weights=data)
+#     rms = np.sqrt(np.average((index - mean)**2, weights=data))
 
-    rms_estimates = np.empty(n_simulations)
-    for i in range(n_simulations):
-        simulated_counts = np.random.normal(loc=data, scale=sigma)
-        simulated_counts = np.clip(simulated_counts, 0, None)
-        sim_mean = np.average(index, weights=simulated_counts)
-        rms_estimates[i] = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
+#     rms_estimates = np.empty(n_simulations)
+#     for i in range(n_simulations):
+#         simulated_counts = np.random.normal(loc=data, scale=sigma)
+#         simulated_counts = np.clip(simulated_counts, 0, None)
+#         sim_mean = np.average(index, weights=simulated_counts)
+#         rms_estimates[i] = np.sqrt(np.average((index - sim_mean)**2, weights=simulated_counts))
 
-    return rms, np.std(rms_estimates)
+#     return rms, np.std(rms_estimates)
 
 
 def load_tierms(files, time_regex, sigma):
