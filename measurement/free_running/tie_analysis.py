@@ -17,7 +17,7 @@ N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
 TRIGGER_LEVEL_V = 0.1
 
-PREFIX = "jacbo"
+PREFIX = "jacob"
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
