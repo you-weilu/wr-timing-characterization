@@ -17,7 +17,7 @@ ch_slave = 4
 BINWIDTH = 1
 N_BINS = 1000
 
-DATA_PREFIX = "tt_jitter"  # change to "tt_jitter" for TT internal jitter measurements
+PREFIX = "jacob"
 
 DURATIONS_SEC = [1e-3, 1e-2, 1e-1, 1]  # 1ms to 1s
 NUM_TRIALS = 1000
@@ -52,7 +52,7 @@ for duration in DURATIONS_SEC:
 
     all_data = np.array(all_data)  # shape: (NUM_TRIALS, N_BINS)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"../../data/tie_errorbars_{DATA_PREFIX}_{duration:.4g}s_{timestamp}.npz"
+    fname = f"../../data/tie_errorbars_{PREFIX}_{duration:.4g}s_{timestamp}.npz"
     np.savez(fname, index=index, trials=all_data)
     print(f"Saved {NUM_TRIALS} trials to {fname}")
 

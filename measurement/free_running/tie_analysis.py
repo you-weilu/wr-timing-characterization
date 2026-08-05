@@ -17,6 +17,8 @@ N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
 
 TRIGGER_LEVEL_V = 0.1
 
+PREFIX = "jacbo"
+
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
 # 10ms to 1hr
@@ -55,7 +57,7 @@ for checkpoint in CHECKPOINTS_SEC:
 
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    np.savez(f"../../data/tie_histogram_tt_jitter_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
+    np.savez(f"../../data/tie_histogram_{PREFIX}_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)

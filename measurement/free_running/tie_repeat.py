@@ -22,6 +22,8 @@ NUM_TRIALS = 50
 
 TRIGGER_LEVEL_V = 0.1
 
+PREFIX = "jacob"
+
 # ========================================
 
 tagger = TimeTagger.createTimeTagger()
@@ -55,7 +57,7 @@ for TRIAL_DURATION_SEC in DURATIONS_TO_REDO:
     combined_data = all_data.sum(axis=0)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"../../data/tie_histogram_tt_jitter_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
+    fname = f"../../data/tie_histogram_{PREFIX}_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
     np.savez(fname, index=index, data=combined_data)
     print(f"Saved combined histogram to {fname}")
 
