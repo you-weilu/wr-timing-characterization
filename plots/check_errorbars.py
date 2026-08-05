@@ -33,6 +33,6 @@ def check_prefix(prefix):
     print()
 
 
-for prefix in ["free", "1.2km", "tt_jitter"]:
+for prefix in ["free", "1.2km", "tt_jitter", "jacob"]:
     print(f"=== {prefix} ===")
     check_prefix(prefix)
