@@ -21,9 +21,9 @@ PREFIX = "jacob"
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
-# 10ms to 1hr
-MIN_CHECKPOINT_SEC = 1e-2
-MAX_CHECKPOINT_SEC = 3600
+# 10ms to 1hr (past)
+MIN_CHECKPOINT_SEC = 1e-6
+MAX_CHECKPOINT_SEC = 1e-2
 NUM_CHECKPOINTS = 25
 
 CHECKPOINTS_SEC = np.unique(np.logspace(
