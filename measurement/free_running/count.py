@@ -2,7 +2,12 @@ import numpy as np
 import glob
 import re
 
-files = sorted(f for f in glob.glob("../../data/tie_histogram_*.npz") if "refclk" not in f)
+# ============ CONFIGURATION ============
+PREFIX = "jacob"   # filename prefix after "tie_histogram_", e.g. "jacob", "1.2km", "free"
+# ========================================
+
+files = sorted(glob.glob(f"../../data/tie_histogram_{PREFIX}_*.npz"))
+time_regex = rf"tie_histogram_{re.escape(PREFIX)}_([\d.eE+-]+)s_"
 
 checkpoint_times = []
 counts_list = []
@@ -12,7 +17,10 @@ for f in files:
     data = d["data"]
     total_counts = data.sum()
 
-    match = re.search(r"tie_histogram_([\d.eE+-]+)s_", f)
+    match = re.search(time_regex, f)
+    if match is None:
+        print(f"Warning: could not parse time from filename, skipping: {f}")
+        continue
     checkpoint_time = float(match.group(1))
 
     checkpoint_times.append(checkpoint_time)
