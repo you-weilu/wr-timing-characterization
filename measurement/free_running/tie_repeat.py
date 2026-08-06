@@ -16,8 +16,9 @@ ch_slave = 4
 BINWIDTH = 1
 N_BINS = 2000
 
-# Array of durations to redo
-DURATIONS_TO_REDO = [0.0001199, 0.0002154, 0.0002503, 0.0003302, 0.0004642 ,0.0009091, 0.002154, 0.002503]
+MIN_DURATION_SEC = 1e-6
+MAX_DURATION_SEC = 1e-2
+NUM_CHECKPOINTS = 20
 NUM_TRIALS = 50
 
 TRIGGER_LEVEL_V = 0.1
@@ -25,6 +26,12 @@ TRIGGER_LEVEL_V = 0.1
 PREFIX = "jacob"
 
 # ========================================
+
+DURATIONS_TO_REDO = np.unique(np.logspace(
+    np.log10(MIN_DURATION_SEC),
+    np.log10(MAX_DURATION_SEC),
+    NUM_CHECKPOINTS
+))
 
 tagger = TimeTagger.createTimeTagger()
 print("Connected Device Serial:", tagger.getSerial())
