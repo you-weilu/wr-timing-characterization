@@ -19,8 +19,8 @@ N_BINS = 1000
 
 PREFIX = "jacob"
 
-DURATIONS_SEC = [1e-3, 1e-2, 1e-1, 1]  # 1ms to 1s
-NUM_TRIALS = 1000
+DURATIONS_SEC = [3600]  # range used before: 1ms to 1s
+NUM_TRIALS = 50
 
 TRIGGER_LEVEL_V = 0.1
 # ========================================
