@@ -20,9 +20,9 @@ N_BINS = 2000
 TRIAL_DURATION_SEC = 1e-7   # 100ns per trial
 NUM_TRIALS = 3000
 
-TRIGGER_LEVEL_V = 0.1
+TRIGGER_LEVEL_V = 0.75
 
-PREFIX = "jacob"
+PREFIX = "b2b"
 
 # ========================================
 

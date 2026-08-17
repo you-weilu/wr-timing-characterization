@@ -17,7 +17,7 @@ ch_slave = 4
 BINWIDTH = 1
 N_BINS = 1000
 
-PREFIX = "jacob"
+PREFIX = "b2b"
 
 DURATIONS_SEC = [1800]  # range used before: 1ms to 1s
 NUM_TRIALS = 20
