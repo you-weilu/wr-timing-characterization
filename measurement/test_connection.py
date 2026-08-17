@@ -1,4 +1,4 @@
-import TimeTagger
+from Swabian import TimeTagger
 
 # Initialize device (uses default Standard resolution mode)
 tagger = TimeTagger.createTimeTagger()
