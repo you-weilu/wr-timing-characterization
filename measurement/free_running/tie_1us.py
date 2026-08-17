@@ -20,9 +20,11 @@ N_BINS = 2000
 TRIAL_DURATION_SEC = 1e-6   # 1us per trial
 NUM_TRIALS = 1000
 
-TRIGGER_LEVEL_V = 0.1
+# TimeTagger X voltage range: +-1V --> attenuate WR (3.3V --> 1.5V)
+# attenuation needed = 20log_10(3.3/1.5) ≈ 7dB (6.85dB)
+TRIGGER_LEVEL_V = 0.75 # Trigger_level = 50% peak voltage
 
-PREFIX = "jacob"
+PREFIX = "b2b"
 
 # ========================================
 
