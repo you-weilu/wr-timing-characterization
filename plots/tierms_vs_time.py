@@ -7,8 +7,15 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import glob
 import re
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+DATA_DIR = SCRIPT_DIR.parent / "data"
+
+# ============ CONFIGURATION ============
+PREFIX = "b2b"   # filename prefix after "tie_histogram_", e.g. "b2b", "jacob", "1.2km", "free"
+# ========================================
 
 def gaussian_monte_carlo_error(index, data, n_simulations=1000):
     mean = np.average(index, weights=data)
@@ -24,7 +31,7 @@ def gaussian_monte_carlo_error(index, data, n_simulations=1000):
 
     return sigma, np.std(rms_estimates)
 
-files = sorted(glob.glob("../data/tie_histogram_*.npz"))
+files = sorted(str(p) for p in DATA_DIR.glob(f"tie_histogram_{PREFIX}_*.npz"))
 free_running_files = [f for f in files if "refclk" not in f]
 
 # preallocate arrays with number of data points
@@ -43,9 +50,13 @@ for f in free_running_files:
         print(f"Skipping {f} — zero counts")
         continue
 
+    if (data < 0).any() or np.isnan(data).any():
+        print(f"Skipping {f} — corrupted histogram (negative or NaN counts, int32 overflow)")
+        continue
+
     rms, error = gaussian_monte_carlo_error(index, data)
 
-    match = re.search(r"tie_histogram_([\d.eE+-]+)s_", f)
+    match = re.search(rf"tie_histogram_{re.escape(PREFIX)}_([\d.eE+-]+)s_", f)
     checkpoint_time = float(match.group(1))
 
     checkpoint_times[i] = checkpoint_time
@@ -63,14 +74,14 @@ checkpoint_times = np.array(checkpoint_times)[order]
 tie_rms_values = np.array(tie_rms_values)[order]
 error_bars = np.array(error_bars)[order]
 
-plt.errorbar(checkpoint_times, tie_rms_values, yerr=error_bars, marker='o', capsize=3)
+plt.plot(checkpoint_times, tie_rms_values, marker='o')
 plt.xscale("log")
 plt.xlabel("Elapsed time (s)")
 plt.ylabel("TIE RMS (ps)")
-plt.title("TIE RMS vs. averaging time")
+plt.title(f"TIE RMS vs. averaging time ({PREFIX})")
 plt.grid(True, which="both", ls="--", alpha=0.5)
 plt.tight_layout()
-plt.savefig("tie_rms_vs_time.png")
+plt.savefig(SCRIPT_DIR / f"tie_rms_vs_time_{PREFIX}.png")
 plt.show()
 
 print("Checkpoint times (s):", checkpoint_times)

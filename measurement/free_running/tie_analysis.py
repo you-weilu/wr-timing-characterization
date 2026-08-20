@@ -7,23 +7,27 @@ from Swabian import TimeTagger
 import numpy as np
 import time
 from datetime import datetime
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 # Configuration
-ch_master = 3   # WR-LEN #1 clock output
-ch_slave = 4    # WR-LEN #2 clock output
+ch_master = 1   # WR-LEN #1 clock output
+ch_slave = 2    # WR-LEN #2 clock output
 
 BINWIDTH = 1         # ps resolution
 N_BINS = 2000        # span = binwidth * n_bins = 2000 ps = +- 1000 ps window
+SW_DELAY = 2000 # in ps
 
-TRIGGER_LEVEL_V = 0.75
+TRIGGER_LEVEL_V = 0
 
 PREFIX = "b2b"
 
 # Checkpoints: elapsed seconds at which to snapshot the histogram
 # Logarithmically spaced
 # 10ms to 1hr (past)
-MIN_CHECKPOINT_SEC = 1e-6
-MAX_CHECKPOINT_SEC = 1e-2
+MIN_CHECKPOINT_SEC = 0.01
+MAX_CHECKPOINT_SEC = 3600
 NUM_CHECKPOINTS = 25
 
 CHECKPOINTS_SEC = np.unique(np.logspace(
@@ -41,6 +45,9 @@ tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
 corr.start()
 
+# delay to account for offset
+tagger.setDelaySoftware(2,SW_DELAY)
+
 elapsed = 0
 for checkpoint in CHECKPOINTS_SEC:
     segment_duration = checkpoint - elapsed
@@ -57,7 +64,7 @@ for checkpoint in CHECKPOINTS_SEC:
 
     print(f"Checkpoint {checkpoint:.4g}s reached, saving histogram...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    np.savez(f"../../data/tie_histogram_{PREFIX}_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
+    np.savez(DATA_DIR / f"tie_histogram_{PREFIX}_{checkpoint:.4g}s_{timestamp}.npz", index=index, data=data)
 
 corr.stop()
 TimeTagger.freeTimeTagger(tagger)

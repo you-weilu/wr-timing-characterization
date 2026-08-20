@@ -9,26 +9,29 @@ from Swabian import TimeTagger
 import numpy as np
 import time
 from datetime import datetime
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 # ============ CONFIGURATION ============
-ch_master = 3
-ch_slave = 4
+ch_master = 1
+ch_slave = 2
 
 BINWIDTH = 1
 N_BINS = 2000
 
-TRIAL_DURATION_SEC = 1e-6   # 1us per trial
+TRIAL_DURATION_SEC = 1e-6 # 1us
 NUM_TRIALS = 1000
+SW_DELAY = 2000 # in ps
 
-# TimeTagger X voltage range: +-1V --> attenuate WR (3.3V --> 1.5V)
-# attenuation needed = 20log_10(3.3/1.5) ≈ 7dB (6.85dB)
-TRIGGER_LEVEL_V = 0.75 # Trigger_level = 50% peak voltage
+# wr clk_out ≈ 950mV
+TRIGGER_LEVEL_V = 0 # Trigger_level = 50% peak voltage
 
 PREFIX = "b2b"
 
 # ========================================
 
-tagger = TimeTagger.createTimeTagger()
+tagger = TimeTagger.createTimeTagger('23010013TP')
 print("Connected Device Serial:", tagger.getSerial())
 
 tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
@@ -36,9 +39,12 @@ tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
 all_data = []   # one histogram (array) per trial
 index = None
+corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
+
+# delay to account for offset
+tagger.setDelaySoftware(2,SW_DELAY)
 
 for trial in range(NUM_TRIALS):
-    corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
     corr.startFor(int(TRIAL_DURATION_SEC * 1e12))  # startFor takes picoseconds
     corr.waitUntilFinished()
 
@@ -51,7 +57,7 @@ for trial in range(NUM_TRIALS):
 
     print(f"Trial {trial+1}/{NUM_TRIALS} — total counts: {total_counts}")
 
-    del corr  # discard; next loop iteration creates a fresh object
+    corr.clear()  # discard; next loop iteration reuses the same object
 
 TimeTagger.freeTimeTagger(tagger)
 
@@ -59,5 +65,6 @@ TimeTagger.freeTimeTagger(tagger)
 all_data = np.array(all_data)
 combined_data = all_data.sum(axis=0) # collapse into one histogram
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-np.savez(f"../../data/tie_histogram_{PREFIX}_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz", index=index, data=combined_data)
-print(f"Saved combined histogram from {NUM_TRIALS} trials to ../data/tie_histogram_1us_{timestamp}.npz")
+out_path = DATA_DIR / f"tie_histogram_{PREFIX}_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
+np.savez(out_path, index=index, data=combined_data)
+print(f"Saved combined histogram from {NUM_TRIALS} trials to {out_path}")

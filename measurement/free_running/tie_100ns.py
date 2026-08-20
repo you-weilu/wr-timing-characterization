@@ -9,18 +9,22 @@ from Swabian import TimeTagger
 import numpy as np
 import time
 from datetime import datetime
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 # ============ CONFIGURATION ============
-ch_master = 3
-ch_slave = 4
+ch_master = 1
+ch_slave = 2
 
 BINWIDTH = 1
 N_BINS = 2000
 
 TRIAL_DURATION_SEC = 1e-7   # 100ns per trial
 NUM_TRIALS = 3000
+SW_DELAY = 2000 # in ps
 
-TRIGGER_LEVEL_V = 0.75
+TRIGGER_LEVEL_V = 0
 
 PREFIX = "b2b"
 
@@ -35,8 +39,12 @@ tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 all_data = []   # one histogram (array) per trial
 index = None
 
+# delay to account for offset
+tagger.setDelaySoftware(2,SW_DELAY)
+
+corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
+
 for trial in range(NUM_TRIALS):
-    corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
     corr.startFor(int(TRIAL_DURATION_SEC * 1e12))  # startFor takes picoseconds
     corr.waitUntilFinished()
 
@@ -49,7 +57,7 @@ for trial in range(NUM_TRIALS):
 
     print(f"Trial {trial+1}/{NUM_TRIALS} — total counts: {total_counts}")
 
-    del corr  # discard; next loop iteration creates a fresh object
+    corr.clear()  # discard; next loop iteration reuses the same object
 
 TimeTagger.freeTimeTagger(tagger)
 
@@ -57,5 +65,6 @@ TimeTagger.freeTimeTagger(tagger)
 all_data = np.array(all_data)
 combined_data = all_data.sum(axis=0) # collapse into one histogram
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-np.savez(f"../../data/tie_histogram_{PREFIX}_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz", index=index, data=combined_data)
-print(f"Saved combined histogram from {NUM_TRIALS} trials to ../data/tie_histogram_100ns_{timestamp}.npz")
+out_path = DATA_DIR / f"tie_histogram_{PREFIX}_{TRIAL_DURATION_SEC:.4g}s_{timestamp}.npz"
+np.savez(out_path, index=index, data=combined_data)
+print(f"Saved combined histogram from {NUM_TRIALS} trials to {out_path}")

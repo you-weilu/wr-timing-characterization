@@ -1,12 +1,14 @@
 import numpy as np
-import glob
 import re
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 # ============ CONFIGURATION ============
 PREFIX = "jacob"   # filename prefix after "tie_histogram_", e.g. "jacob", "1.2km", "free"
 # ========================================
 
-files = sorted(glob.glob(f"../../data/tie_histogram_{PREFIX}_*.npz"))
+files = sorted(str(p) for p in DATA_DIR.glob(f"tie_histogram_{PREFIX}_*.npz"))
 time_regex = rf"tie_histogram_{re.escape(PREFIX)}_([\d.eE+-]+)s_"
 
 checkpoint_times = []

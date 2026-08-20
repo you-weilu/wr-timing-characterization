@@ -9,20 +9,24 @@
 from Swabian import TimeTagger
 import numpy as np
 from datetime import datetime
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 # ============ CONFIGURATION ============
-ch_master = 3
-ch_slave = 4
+ch_master = 1
+ch_slave = 2
 
 BINWIDTH = 1
 N_BINS = 1000
+SW_DELAY = 2000 # in ps
 
 PREFIX = "b2b"
 
 DURATIONS_SEC = [1800]  # range used before: 1ms to 1s
 NUM_TRIALS = 20
 
-TRIGGER_LEVEL_V = 0.75
+TRIGGER_LEVEL_V = 0
 # ========================================
 
 tagger = TimeTagger.createTimeTagger()
@@ -31,14 +35,17 @@ print("Connected Device Serial:", tagger.getSerial())
 tagger.setTriggerLevel(ch_master, TRIGGER_LEVEL_V)
 tagger.setTriggerLevel(ch_slave, TRIGGER_LEVEL_V)
 
+corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
+
+# delay to account for offset
+tagger.setDelaySoftware(2,SW_DELAY)
+
 for duration in DURATIONS_SEC:
     print(f"\n=== {NUM_TRIALS} trials at {duration:.4g}s each ===")
     all_data = []
     index = None
 
     for trial in range(NUM_TRIALS):
-        corr = TimeTagger.Correlation(tagger, ch_master, ch_slave, binwidth=BINWIDTH, n_bins=N_BINS)
-        corr.clear()
         corr.startFor(int(duration * 1e12))
         corr.waitUntilFinished()
 
@@ -48,11 +55,11 @@ for duration in DURATIONS_SEC:
         data = corr.getData()
         all_data.append(data)
         print(f"  Trial {trial+1}/{NUM_TRIALS} — counts: {data.sum()}")
-        del corr
+        corr.clear()
 
     all_data = np.array(all_data)  # shape: (NUM_TRIALS, N_BINS)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"../../data/tie_errorbars_{PREFIX}_{duration:.4g}s_{timestamp}.npz"
+    fname = DATA_DIR / f"tie_errorbars_{PREFIX}_{duration:.4g}s_{timestamp}.npz"
     np.savez(fname, index=index, trials=all_data)
     print(f"Saved {NUM_TRIALS} trials to {fname}")
 
