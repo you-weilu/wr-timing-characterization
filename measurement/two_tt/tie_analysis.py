@@ -5,7 +5,8 @@
 #
 # Setup: two Time Taggers (USB, same PC), each disciplined by a shared
 # external frequency generator on ch_ref. Each tagger tags the clock output
-# of one WR-LEN module on ch_signal. The two taggers are combined into a
+# of one WR-LEN module on ch_signal, and the WR-LEN's 1PPS output on ch_pps
+# for absolute epoch alignment. The two taggers are combined into a
 # single TimeTaggerNetwork so their channels can be cross-correlated;
 # channels from the second (slave) server are offset by 1000.
 
